@@ -18,7 +18,8 @@ exports.create = (req, res) => {
   // save user in the database
   user.save(user)
   .then(data => {
-    res.send(data);
+    // res.send(data);
+    res.redirect('/add-user');
   })
   .catch(err => {
     res.status(500).send({
@@ -29,13 +30,30 @@ exports.create = (req, res) => {
 
 //recover and return all users | recover and return a single user
 exports.find = (req, res) => {
-  Userdb.find()
-    .then(user => {
-      res.send(user)
+
+  if(req.query.id){
+    const id = req.query.id;
+
+    Userdb.findById(id)
+    .then(data => {
+      if(!data){
+        res.status(404).send({ message: 'Not found user with id '+id});
+      }else{
+        res.send(data);
+      }
+    }).catch(err => {
+      res.status(500).send({ message: 'Erro retrieving user with id '+id})
     })
-    .catch(err => {
-      res.status(500).send({message: err.message || 'Error occurred while retrieving user information'});
-    });
+
+  }else{ 
+    Userdb.find()
+      .then(user => {
+        res.send(user)
+      })
+      .catch(err => {
+        res.status(500).send({message: err.message || 'Error occurred while retrieving user information'});
+      });
+  }
 };
 
 //update a new identified user by user id
@@ -70,6 +88,6 @@ exports.delete = (req, res) => {
     }
   })
   .catch(err => {
-    res.status(500).send({message: 'Could not delete user with id= '+id});
+    res.status(500).send({message: `Could not delete user with id= ${id}`});
   });
 }
